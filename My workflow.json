@@ -1,0 +1,234 @@
+{
+  "name": "My workflow",
+  "nodes": [
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $('Telegram Trigger').item.json.message.text }}",
+        "options": {
+          "systemMessage": "You are the SCIT Placement Chatbot, an intelligent \nassistant for Symbiosis Centre for Information \nTechnology (SCIT) student placement data analysis.\n\nINTRODUCTION:\nWhen a user says \"hi\", \"hello\" or greets you, \nintroduce yourself as:\n\"Hi! I am the SCIT Placement Chatbot. I can help \nyou analyze student placement data. Ask me anything \nabout student records, specializations, experience, \nor academic performance!\"\n\nDATABASE CONTEXT:\nYou have access to a Supabase PostgreSQL database.\nTable name: students_new\nColumns:\n- serial_no (INTEGER): Student serial number\n- name (TEXT): Full name of student\n- course (TEXT): Course enrolled (e.g. MBA-ITBM)\n- age (INTEGER): Age of student\n- gender (TEXT): Male/Female\n- major_specialization (TEXT): MBA major subject\n- minor_specialization (TEXT): MBA minor subject\n- tenth_percentage (TEXT): 10th grade percentage\n- tenth_year_of_passing (TEXT): 10th passing year\n- twelfth_percentage (TEXT): 12th grade percentage\n- twelfth_year_of_passing (TEXT): 12th passing year\n- diploma_percentage (TEXT): Diploma percentage \n  (may be N/A)\n- diploma_year_of_passing (TEXT): Diploma year \n  (may be N/A)\n- graduation_course (TEXT): Graduation degree \n  (e.g. B.Tech., B.Sc., B.Com.)\n- graduation_specialization (TEXT): Graduation \n  subject/stream\n- graduation_year_of_passing (TEXT): Graduation year\n- total_work_experience_months (INTEGER): Work \n  experience in months\n\nSTRICT RULES:\n1. ALWAYS call the HTTP tool before answering\n2. NEVER guess or assume any numbers or names\n3. NEVER answer from memory - always fetch fresh data\n4. Always use exact column names in SQL queries\n5. Always use table name \"students_new\"\n6. If no data found say \"No matching records found\"\n7. Give direct, short answers only\n8. Never show raw SQL in your response\n\nSQL GUIDELINES:\n- Always use SELECT queries only\n- For counting: SELECT COUNT(*) FROM students_new \n  WHERE condition\n- For grouping: SELECT column, COUNT(*) FROM \n  students_new GROUP BY column\n- For averages: SELECT AVG(age) FROM students_new\n- For text columns use ILIKE for case-insensitive \n  matching:\n  WHERE graduation_course ILIKE '%B.Tech%'\n- For experience filter:\n  WHERE total_work_experience_months > 10\n- Never use semicolons at end of queries\n\nEXAMPLE QUERIES:\nQ: How many students have B.Tech degree?\nSQL: SELECT COUNT(*) FROM students_new WHERE \ngraduation_course ILIKE '%B.Tech%'\n\nQ: How many male vs female students?\nSQL: SELECT gender, COUNT(*) FROM students_new \nGROUP BY gender\n\nQ: Average age of students?\nSQL: SELECT AVG(age) FROM students_new\n\nQ: Students with Information Security as major?\nSQL: SELECT COUNT(*) FROM students_new WHERE \nmajor_specialization ILIKE '%Information Security%'\n\nQ: B.Tech students with more than 10 months experience?\nSQL: SELECT COUNT(*) FROM students_new WHERE \ngraduation_course ILIKE '%B.Tech%' AND \ntotal_work_experience_months > 10\n\nRESPONSE FORMAT:\n- Always give a direct answer with exact number\n- Keep responses concise and clear\n- Example: \"There are 44 students with B.Tech degree \n  and more than 10 months of work experience.\""
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        -16,
+        -160
+      ],
+      "id": "b32a9330-7040-4662-bdda-1bc50dc45d95",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $('Telegram Trigger').item.json.message.chat.id }}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        -32,
+        80
+      ],
+      "id": "ec32499e-2582-4b1c-b029-2f685bbc998e",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.toolCalculator",
+      "typeVersion": 1,
+      "position": [
+        96,
+        80
+      ],
+      "id": "ca0eed4e-c59a-4a0d-b83f-033752eff539",
+      "name": "Calculator"
+    },
+    {
+      "parameters": {
+        "toolDescription": "Use this tool to query the SCIT student placement database.\nALWAYS call this tool for ANY question about students.\n\nThis tool executes a raw SQL SELECT query on the 'students' table.\nPass a valid PostgreSQL query string in the 'query' field.\n\nTable: students\nColumns:\n- id, serial_no, name, course, age, gender\n- major_specialization, minor_specialization\n- tenth_percentage, tenth_year_of_passing\n- twelfth_percentage, twelfth_year_of_passing\n- diploma_percentage, diploma_year_of_passing\n- graduation_course, graduation_specialization, graduation_year_of_passing\n- total_work_experience_months (INTEGER)\n\nExample queries:\n- \"SELECT COUNT(*) FROM students WHERE total_work_experience_months > 12\"\n- \"SELECT name, major_specialization FROM students WHERE course = 'B.Tech'\"\n- \"SELECT AVG(age) FROM students WHERE gender = 'Female'\"\n```",
+        "method": "POST",
+        "url": "https://ncxbqkrbdedcbozxciwi.supabase.co/rest/v1/rpc/execute_query",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5jeGJxa3JiZGVkY2JvenhjaXdpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI2MDUxNDcsImV4cCI6MjA4ODE4MTE0N30.gpwv-OB_x7e3TWNmycslLA_LHBIptw8Q4pL6mahu6e0"
+            },
+            {
+              "name": "apikey",
+              "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5jeGJxa3JiZGVkY2JvenhjaXdpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI2MDUxNDcsImV4cCI6MjA4ODE4MTE0N30.gpwv-OB_x7e3TWNmycslLA_LHBIptw8Q4pL6mahu6e0"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"query\": \"{{ $fromAI('query', 'A valid PostgreSQL SELECT query string on the students table') }}\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.4,
+      "position": [
+        256,
+        80
+      ],
+      "id": "57ebafae-2ca3-4c3e-aea5-bbbe406f3019",
+      "name": "Supabase Tool",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "qxGBDtGQftUE8abA",
+          "name": "Header Auth account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "updates": [
+          "message"
+        ],
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -272,
+        -160
+      ],
+      "id": "eb09cb89-d292-407f-be90-883c2f8b7096",
+      "name": "Telegram Trigger",
+      "webhookId": "37f931c0-2e99-42cc-8cfd-0ce89fd29a55",
+      "credentials": {
+        "telegramApi": {
+          "id": "biolYf5HLZKHC2Yk",
+          "name": "Telegram account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger').item.json.message.chat.id }}",
+        "text": "={{ $('AI Agent').item.json.output }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        336,
+        -160
+      ],
+      "id": "d43142f3-9d2d-407e-a34a-ddbbffd82dd4",
+      "name": "Send a text message",
+      "webhookId": "c16d6e62-9035-4064-adee-5bec25cea06f",
+      "credentials": {
+        "telegramApi": {
+          "id": "biolYf5HLZKHC2Yk",
+          "name": "Telegram account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": "llama-3.3-70b-versatile",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        -320,
+        64
+      ],
+      "id": "76db1c46-4bcf-48eb-8908-35dfa20983bb",
+      "name": "Groq Chat Model",
+      "credentials": {
+        "groqApi": {
+          "id": "QyNfHShunNrdYUWI",
+          "name": "Groq account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Calculator": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Send a text message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Supabase Tool": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Telegram Trigger": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Groq Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "46b52af6-8482-4064-b3e1-4c668c6c013d",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "8aede26f2a4688693a48c6cb43e58f7bd68871e7e13a83054ec95733392efb23"
+  },
+  "id": "dAuYNP1hRsXm3AHq",
+  "tags": []
+}
